@@ -25,17 +25,7 @@ public class SchedulerConfig {
 
     private QuartzProperties quartzProperties;
 
-    @Bean(name = "quartzHikariConfig")
-    @ConfigurationProperties(prefix = "quartz.datasource.hikari")
-    public HikariConfig quartzHikariConfig() {
-        return new HikariConfig();
-    }
-
-    @Bean(name = "quartzDataSource")
-    public DataSource quartzDataSource() {
-        return new HikariDataSource(quartzHikariConfig());
-    }
-
+    private DataSource dataSource;
 
     @Bean(name = "schedulerFactory")
     public SchedulerFactoryBean schedulerFactoryBean() {
@@ -47,7 +37,7 @@ public class SchedulerConfig {
 
         SchedulerFactoryBean factory = new SchedulerFactoryBean();
         factory.setOverwriteExistingJobs(true);
-        factory.setDataSource(quartzDataSource());
+        factory.setDataSource(dataSource);
         factory.setQuartzProperties(properties);
         factory.setJobFactory(jobFactory);
         return factory;
@@ -61,5 +51,10 @@ public class SchedulerConfig {
     @Autowired
     public void setQuartzProperties(QuartzProperties quartzProperties) {
         this.quartzProperties = quartzProperties;
+    }
+
+    @Autowired
+    public void setDataSource(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
 }
