@@ -1,12 +1,6 @@
 # Query Performance Problem
 Check Performance Query
 
-#### Table of Contents
-
-* [Task Definition](#markdown-header-task-definition)
-* [API Documentation](#markdown-header-api-documentation)
-* [Developer Notes](#markdown-header-developer-notes)
-
 Task Definition
 =================
 
