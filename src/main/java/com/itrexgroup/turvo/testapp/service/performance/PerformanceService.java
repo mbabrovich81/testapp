@@ -1,5 +1,6 @@
 package com.itrexgroup.turvo.testapp.service.performance;
 
+import com.itrexgroup.turvo.testapp.dao.MultiDatabaseDAO;
 import com.itrexgroup.turvo.testapp.dao.PerformanceQueueDAO;
 import com.itrexgroup.turvo.testapp.dao.ReportDAO;
 import com.itrexgroup.turvo.testapp.model.DatabaseEnum;
@@ -17,6 +18,8 @@ import org.springframework.stereotype.Service;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ForkJoinPool;
 
 import static org.quartz.JobBuilder.newJob;
@@ -33,6 +36,8 @@ import static org.quartz.TriggerBuilder.newTrigger;
 public class PerformanceService implements IPerformanceService {
 
     private JdbcMultiDatabaseDAO multiDatabaseDAO;
+
+    private MultiDatabaseDAO multiDatabaseDAO2;
 
     private ReportDAO reportDAO;
 
@@ -131,6 +136,26 @@ public class PerformanceService implements IPerformanceService {
     }
 
     private Object[] executeCheckingPerformance(long requestUid, DatabaseEnum db, String reportUid, String query) {
+        long queryTime1 = 0;
+        long queryTime2 = 0;
+
+        try {
+            long start2 = System.nanoTime();
+            // Execute performance
+            List<Map<String, Object>> listSize2 = multiDatabaseDAO2.queryForList(db, query);
+            long end2 = System.nanoTime();
+
+            log.info("222222[{}][checkPerformance] Query {} executed successfully. Db: {}", requestUid, query, db.name().toUpperCase());
+
+            queryTime2 = end2 - start2;
+
+        } catch (Exception e) {
+            log.warn("[WARNING][{}][checkPerformance] Query {} can't be executed. Only 'select' performance. Db: {}"
+                    , requestUid, query, db.name().toUpperCase(), e);
+
+            getErrorReportData(db, reportUid, Utils.toJson(e));
+        }
+
         try {
             long startDate = System.currentTimeMillis();
 
@@ -235,6 +260,11 @@ public class PerformanceService implements IPerformanceService {
     @Autowired
     public void setMultiDatabaseDAO(JdbcMultiDatabaseDAO multiDatabaseDAO) {
         this.multiDatabaseDAO = multiDatabaseDAO;
+    }
+
+    @Autowired
+    public void setMultiDatabaseDAO2(MultiDatabaseDAO multiDatabaseDAO2) {
+        this.multiDatabaseDAO2 = multiDatabaseDAO2;
     }
 
     @Autowired
