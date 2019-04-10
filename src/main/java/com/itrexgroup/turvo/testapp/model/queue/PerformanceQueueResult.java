@@ -1,4 +1,4 @@
-package com.itrexgroup.turvo.testapp.model.report;
+package com.itrexgroup.turvo.testapp.model.queue;
 
 import lombok.Data;
 

@@ -1,6 +1,9 @@
 package com.itrexgroup.turvo.testapp.dao;
 
-import com.itrexgroup.turvo.testapp.model.report.PerformanceQueueResult;
+import com.itrexgroup.turvo.testapp.model.queue.PerformanceQueue;
+import com.itrexgroup.turvo.testapp.model.queue.PerformanceQueueResult;
+
+import java.util.Map;
 
 /**
  * Created by maxim.babrovich on 02.04.2019.
@@ -9,24 +12,24 @@ public interface PerformanceQueueDAO {
 
     /**
      * Insert data to tbl_test_performance_queue
-     * @param values - list of values
-     * @throws Exception     *
-     */
-    void insertData(Object[] values) throws Exception;
-
-    /**
-     * Update data in tbl_test_performance_queue
-     * @param values - list of values
+     * @param queue - Performance Queue
      * @throws Exception
      */
-    void updateData(Object[] values) throws Exception;
+    void insertData(PerformanceQueue queue) throws Exception;
+
+    /**
+     * Update Attempts num in tbl_test_performance_queue
+     * @param reportUid - report Uid
+     * @throws Exception
+     */
+    void updateAttempts(String reportUid) throws Exception;
 
     /**
      * Delete data in tbl_test_performance_queue
-     * @param values - list of values
+     * @param reportUid - report Uid
      * @throws Exception
      */
-    void deleteData(Object[] values) throws Exception;
+    void deleteData(String reportUid) throws Exception;
 
     /**
      * Delete all from tbl_test_performance_queue

@@ -1,11 +1,13 @@
 package com.itrexgroup.turvo.testapp.dao;
 
-import com.itrexgroup.turvo.testapp.model.report.PerformanceQueueResult;
+import com.itrexgroup.turvo.testapp.model.queue.PerformanceQueue;
+import com.itrexgroup.turvo.testapp.model.queue.PerformanceQueueResult;
+import com.itrexgroup.turvo.testapp.model.report.ReportState;
+import com.itrexgroup.turvo.testapp.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
@@ -27,16 +29,16 @@ public class PerformanceQueueDAOImpl implements PerformanceQueueDAO {
             + "            (report_uid, "
             + "             created_date, "
             + "             query) "
-            + "VALUES      (?, ?, ?)";
+            + "VALUES      (:reportUid, :createdDate, :query)";
 
-    private static final String UPDATE_TABLE_TEST_PERFORMANCE_QUEUE = ""
+    private static final String UPDATE_ATTEMPTS_TABLE_TEST_PERFORMANCE_QUEUE = ""
             + "UPDATE tbl_test_performance_queue "
             + "SET    attempts_num = attempts_num + 1 "
-            + "WHERE  report_uid = ? ";
+            + "WHERE  report_uid = :reportUid";
 
     private static final String DELETE_TABLE_TEST_PERFORMANCE_QUEUE = ""
             + "DELETE FROM tbl_test_performance_queue "
-            + "WHERE  report_uid = ? ";
+            + "WHERE  report_uid = :reportUid";
 
     private static final String DELETE_ALL = ""
             + "DELETE FROM tbl_test_performance_queue";
@@ -46,14 +48,12 @@ public class PerformanceQueueDAOImpl implements PerformanceQueueDAO {
             + "FROM   tbl_test_performance_queue "
             + "WHERE  report_uid = :reportUid";
 
-    private JdbcTemplate jdbcTemplate;
-
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     @Override
-    public void insertData(Object[] values) throws Exception {
+    public void insertData(PerformanceQueue queue) throws Exception {
         try {
-            jdbcTemplate.update(INSERT_TABLE_TEST_PERFORMANCE_QUEUE, values);
+            namedParameterJdbcTemplate.update(INSERT_TABLE_TEST_PERFORMANCE_QUEUE, Utils.toMap(queue));
         } catch (DataAccessException e) {
             log.error("[ERROR][PerformanceQueueDAO][insertData] ", e);
             throw new Exception(e);
@@ -61,9 +61,13 @@ public class PerformanceQueueDAOImpl implements PerformanceQueueDAO {
     }
 
     @Override
-    public void updateData(Object[] values) throws Exception {
+    public void updateAttempts(String reportUid) throws Exception {
         try {
-            jdbcTemplate.update(UPDATE_TABLE_TEST_PERFORMANCE_QUEUE, values);
+            Map<String, Object> paramMap = new HashMap<String, Object>() {{
+                put("reportUid", reportUid);
+            }};
+
+            namedParameterJdbcTemplate.update(UPDATE_ATTEMPTS_TABLE_TEST_PERFORMANCE_QUEUE, paramMap);
         } catch (DataAccessException e) {
             log.error("[ERROR][PerformanceQueueDAO][updateData] ", e);
             throw new Exception(e);
@@ -71,9 +75,13 @@ public class PerformanceQueueDAOImpl implements PerformanceQueueDAO {
     }
 
     @Override
-    public void deleteData(Object[] values) throws Exception {
+    public void deleteData(String reportUid) throws Exception {
         try {
-            jdbcTemplate.update(DELETE_TABLE_TEST_PERFORMANCE_QUEUE, values);
+            Map<String, Object> paramMap = new HashMap<String, Object>() {{
+                put("reportUid", reportUid);
+            }};
+
+            namedParameterJdbcTemplate.update(DELETE_TABLE_TEST_PERFORMANCE_QUEUE, paramMap);
         } catch (DataAccessException e) {
             log.error("[ERROR][PerformanceQueueDAO][deleteData] ", e);
             throw new Exception(e);
@@ -83,7 +91,7 @@ public class PerformanceQueueDAOImpl implements PerformanceQueueDAO {
     @Override
     public void deleteAll() throws Exception {
         try {
-            jdbcTemplate.update(DELETE_ALL);
+            namedParameterJdbcTemplate.update(DELETE_ALL, new HashMap<>());
         } catch (DataAccessException e) {
             log.error("[ERROR][PerformanceQueueDAO][deleteAll] ", e);
             throw new Exception(e);
@@ -114,12 +122,6 @@ public class PerformanceQueueDAOImpl implements PerformanceQueueDAO {
         });
 
         return !CollectionUtils.isEmpty(result) ? result.get(0) : null;
-    }
-
-    @Autowired
-    @Qualifier("jdbcTemplate")
-    public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
     }
 
     @Autowired

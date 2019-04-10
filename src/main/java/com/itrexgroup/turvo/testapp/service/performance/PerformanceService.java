@@ -4,6 +4,8 @@ import com.itrexgroup.turvo.testapp.dao.MultiDatabaseDAO;
 import com.itrexgroup.turvo.testapp.dao.PerformanceQueueDAO;
 import com.itrexgroup.turvo.testapp.dao.ReportDAO;
 import com.itrexgroup.turvo.testapp.model.DatabaseEnum;
+import com.itrexgroup.turvo.testapp.model.queue.PerformanceQueue;
+import com.itrexgroup.turvo.testapp.model.report.Report;
 import com.itrexgroup.turvo.testapp.model.report.ReportState;
 import com.itrexgroup.turvo.testapp.service.job.PerformanceSchedulerJob;
 import com.itrexgroup.turvo.testapp.utils.Utils;
@@ -15,10 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ForkJoinPool;
 
 import static org.quartz.JobBuilder.newJob;
@@ -103,7 +102,7 @@ public class PerformanceService implements IPerformanceService {
         } else {
             // if there are some reports in progress (count > 0, some databases are busy)
             // update the queue
-            performanceQueueDAO.updateData(getPerformanceQueueData(reportUid));
+            performanceQueueDAO.updateAttempts(reportUid);
 
             if (timesTriggered >= repeatCount) {
                 deletePerformanceQueue(requestUid, reportUid);
@@ -120,7 +119,7 @@ public class PerformanceService implements IPerformanceService {
         try {
             reportDAO.insertData(getNewReportData(db, reportUid, query));
 
-            Object[] performanceReport = executeCheckingPerformance(requestUid, db, reportUid, query);
+            Report performanceReport = executeCheckingPerformance(requestUid, db, reportUid, query);
 
             reportDAO.updateData(performanceReport);
 
@@ -132,7 +131,7 @@ public class PerformanceService implements IPerformanceService {
         log.info("[{}][checkPerformance] Finish to execute performance {}. Db: {}", requestUid, query, db.name().toUpperCase());
     }
 
-    private Object[] executeCheckingPerformance(long requestUid, DatabaseEnum db, String reportUid, String query) {
+    private Report executeCheckingPerformance(long requestUid, DatabaseEnum db, String reportUid, String query) {
         try {
             long startDate = System.currentTimeMillis();
 
@@ -148,7 +147,7 @@ public class PerformanceService implements IPerformanceService {
             long queryTime = end - start;
 
             return getSuccessReportData(db, reportUid, queryTime, startDate, endDate, Utils.getResultMsg(list.size()));
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             log.warn("[WARNING][{}][checkPerformance] Query {} can't be executed. Only 'select' performance. Db: {}"
                     , requestUid, query, db.name().toUpperCase(), e);
 
@@ -161,7 +160,7 @@ public class PerformanceService implements IPerformanceService {
 
         try {
             // delete queue data from DB
-            performanceQueueDAO.deleteData(getPerformanceQueueData(reportUid));
+            performanceQueueDAO.deleteData(reportUid);
 
             // delete Performance job
             JobKey jobKey = JobKey.jobKey(reportUid, Utils.SCHEDULER_JOB_GROUP);
@@ -180,27 +179,45 @@ public class PerformanceService implements IPerformanceService {
         log.info("[{}][deletePerformanceQueue] Finish to remove queue and job of report {}.", requestUid, reportUid);
     }
 
-    private Object[] getNewReportData(DatabaseEnum db, String reportUid, String query) {
-        return new Object[] { reportUid, ReportState.in_progress.name(), db.name()
-                , new Timestamp(System.currentTimeMillis()), query };
+    private Report getNewReportData(DatabaseEnum db, String reportUid, String query) {
+        return Report.builder()
+                .reportUid(reportUid)
+                .state(ReportState.in_progress.name())
+                .databaseName(db.name())
+                .createdDate(new Timestamp(System.currentTimeMillis()))
+                .query(query)
+                .build();
     }
 
-    private Object[] getSuccessReportData(DatabaseEnum db, String reportUid, long queryTime
+    private  Report getSuccessReportData(DatabaseEnum db, String reportUid, long queryTime
             , long startDate, long endDate, String resMsg) {
-        return new Object[] { ReportState.success.name(), queryTime, new Timestamp(startDate), new Timestamp(endDate)
-                , resMsg, reportUid, db.name() };
+
+        return Report.builder()
+                .state(ReportState.success.name())
+                .timeInNanos(queryTime)
+                .startDate(new Timestamp(startDate))
+                .endDate(new Timestamp(endDate))
+                .resMsg(resMsg)
+                .reportUid(reportUid)
+                .databaseName(db.name())
+                .build();
     }
 
-    private Object[] getErrorReportData(DatabaseEnum db, String reportUid, String errMsg) {
-        return new Object[] { ReportState.failed.name(), null, null, null, errMsg, reportUid, db.name() };
+    private  Report getErrorReportData(DatabaseEnum db, String reportUid, String errMsg) {
+        return Report.builder()
+                .state(ReportState.failed.name())
+                .resMsg(errMsg)
+                .reportUid(reportUid)
+                .databaseName(db.name())
+                .build();
     }
 
-    private Object[] getNewPerformanceQueueData(String reportUid, String query) {
-        return new Object[] { reportUid, new Timestamp(System.currentTimeMillis()), query };
-    }
-
-    private Object[] getPerformanceQueueData(String reportUid) {
-        return new Object[] { reportUid };
+    private PerformanceQueue getNewPerformanceQueueData(String reportUid, String query) {
+        return PerformanceQueue.builder()
+                .reportUid(reportUid)
+                .createdDate(new Timestamp(System.currentTimeMillis()))
+                .query(query)
+                .build();
     }
 
     private JobDetail buildJobDetail(long requestUid, String reportUid, String query) {

@@ -2,7 +2,7 @@ package com.itrexgroup.turvo.testapp.service.report;
 
 import com.itrexgroup.turvo.testapp.dao.PerformanceQueueDAO;
 import com.itrexgroup.turvo.testapp.dao.ReportDAO;
-import com.itrexgroup.turvo.testapp.model.report.PerformanceQueueResult;
+import com.itrexgroup.turvo.testapp.model.queue.PerformanceQueueResult;
 import com.itrexgroup.turvo.testapp.model.report.ReportResult;
 import com.itrexgroup.turvo.testapp.model.report.ReportState;
 import com.itrexgroup.turvo.testapp.utils.Utils;
@@ -16,9 +16,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Report service.
@@ -72,7 +70,7 @@ public class ReportService implements IReportService {
 
         try {
             // Change state for reports (in_progress to failed)
-            reportDAO.updateState(getUpdateStatusReportData(ReportState.failed, ReportState.in_progress));
+            reportDAO.updateState(ReportState.failed, ReportState.in_progress);
 
         } catch (Exception e) {
             log.error("[ERROR][setFailedForInProgressReports] Set 'failed' for ' in_progress' reports was failed.", e);
@@ -117,10 +115,6 @@ public class ReportService implements IReportService {
         result.setQuery(performanceQueue.getQuery());
 
         return result;
-    }
-
-    private Object[] getUpdateStatusReportData(ReportState target, ReportState source) {
-        return new Object[] { target.name(), source.name() };
     }
 
     @Autowired

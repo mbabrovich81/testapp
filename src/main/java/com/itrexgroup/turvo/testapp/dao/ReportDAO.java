@@ -1,8 +1,11 @@
 package com.itrexgroup.turvo.testapp.dao;
 
+import com.itrexgroup.turvo.testapp.model.report.Report;
 import com.itrexgroup.turvo.testapp.model.report.ReportResult;
+import com.itrexgroup.turvo.testapp.model.report.ReportState;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -12,24 +15,25 @@ public interface ReportDAO {
 
     /**
      * Insert data to tbl_test_performance_report
-     * @param values - list of values
+     * @param report - report
      * @throws Exception     *
      */
-    void insertData(Object[] values) throws Exception;
+    void insertData(Report report) throws Exception;
 
     /**
      * Update data in tbl_test_performance_report
-     * @param values - list of values
+     * @param report - report
      * @throws Exception
      */
-    void updateData(Object[] values) throws Exception;
+    void updateData(Report report) throws Exception;
 
     /**
      * Update state in tbl_test_performance_report
-     * @param values - list of values
+     * @param target - target state
+     * @param source - source state
      * @throws Exception
      */
-    void updateState(Object[] values) throws Exception;
+    void updateState(ReportState target, ReportState source) throws Exception;
 
     /**
      *  Count reports with state in_progress

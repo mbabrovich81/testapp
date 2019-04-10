@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 
 import java.math.BigInteger;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -35,6 +36,11 @@ public class Utils {
             log.error("[JSON]", e);
             return null;
         }
+    }
+
+    public static Map<String, Object> toMap(Object obj) {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.convertValue(obj, Map.class);
     }
 
     public static String getReportLink(String reportUid) {

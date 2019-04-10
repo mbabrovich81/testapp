@@ -1,8 +1,10 @@
 package com.itrexgroup.turvo.testapp.dao;
 
 import com.itrexgroup.turvo.testapp.model.DatabaseEnum;
+import com.itrexgroup.turvo.testapp.model.report.Report;
 import com.itrexgroup.turvo.testapp.model.report.ReportResult;
 import com.itrexgroup.turvo.testapp.model.report.ReportState;
+import com.itrexgroup.turvo.testapp.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -29,22 +31,22 @@ public class ReportDAOImpl implements ReportDAO {
             + "             database_name, "
             + "             created_date, "
             + "             query) "
-            + "VALUES      (?, ?, ?, ?, ?)";
+            + "VALUES      (:reportUid, :state, :databaseName, :createdDate, :query)";
 
     private static final String UPDATE_TABLE_TEST_PERFORMANCE_REPORT = ""
             + "UPDATE tbl_test_performance_report "
-            + "SET    state = ?, "
-            + "       time_in_nanos = ?, "
-            + "       start_date = ?, "
-            + "       end_date = ?, "
-            + "       res_msg = ? "
-            + "WHERE  report_uid = ? "
-            + "       AND database_name = ?";
+            + "SET    state = :state, "
+            + "       time_in_nanos = :timeInNanos, "
+            + "       start_date = :startDate, "
+            + "       end_date = :endDate, "
+            + "       res_msg = :resMsg "
+            + "WHERE  report_uid = :reportUid "
+            + "       AND database_name = :databaseName";
 
     private static final String UPDATE_STATE = ""
             + "UPDATE tbl_test_performance_report "
-            + "SET    state = ? "
-            + "WHERE  state = ?";
+            + "SET    state = :target "
+            + "WHERE  state = :source";
 
     private static final String SELECT_COUNT_IN_PROGRESS = ""
             + "SELECT count(*) "
@@ -56,37 +58,57 @@ public class ReportDAOImpl implements ReportDAO {
             + "FROM   tbl_test_performance_report "
             + "WHERE  report_uid = :reportUid";
 
-    private JdbcTemplate jdbcTemplate;
-
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
+//    new HashMap<String, Object>() {{
+//        put("report_uid", reportUid);
+//        put("state", ReportState.in_progress.name());
+//        put("database_name", db.name());
+//        put("created_date", new Timestamp(System.currentTimeMillis()));
+//        put("query", query);
+//    }};
+
     @Override
-    public void insertData(Object[] values) throws Exception {
+    public void insertData(Report report) throws RuntimeException {
         try {
-            jdbcTemplate.update(INSERT_TABLE_TEST_PERFORMANCE_REPORT, values);
+            namedParameterJdbcTemplate.update(INSERT_TABLE_TEST_PERFORMANCE_REPORT, Utils.toMap(report));
         } catch (DataAccessException e) {
             log.error("[ERROR][ReportDAO][insertData] ", e);
-            throw new Exception(e);
+            throw e;
         }
     }
 
+//         return new HashMap<String, Object>() {{
+//        put("state", ReportState.success.name());
+//        put("time_in_nanos", queryTime);
+//        put("start_date", new Timestamp(startDate));
+//        put("end_date", new Timestamp(endDate));
+//        put("res_msg", resMsg);
+//        put("report_uid", reportUid);
+//        put("database_name", db.name());
+//    }};
     @Override
-    public void updateData(Object[] values) throws Exception {
+    public void updateData(Report report) throws RuntimeException {
         try {
-            jdbcTemplate.update(UPDATE_TABLE_TEST_PERFORMANCE_REPORT, values);
+            namedParameterJdbcTemplate.update(UPDATE_TABLE_TEST_PERFORMANCE_REPORT, Utils.toMap(report));
         } catch (DataAccessException e) {
             log.error("[ERROR][ReportDAO][updateData] ", e);
-            throw new Exception(e);
+            throw e;
         }
     }
 
     @Override
-    public void updateState(Object[] values) throws Exception {
+    public void updateState(ReportState target, ReportState source) throws RuntimeException {
         try {
-            jdbcTemplate.update(UPDATE_STATE, values);
+            Map<String, Object> paramMap =  new HashMap<String, Object>() {{
+                put("target", target.name());
+                put("source", source.name());
+            }};
+
+            namedParameterJdbcTemplate.update(UPDATE_STATE, paramMap);
         } catch (DataAccessException e) {
             log.error("[ERROR][ReportDAO][updateState] ", e);
-            throw new Exception(e);
+            throw e;
         }
     }
 
@@ -150,12 +172,6 @@ public class ReportDAOImpl implements ReportDAO {
         });
 
         return result == null ? new ArrayList<>() : result;
-    }
-
-    @Autowired
-    @Qualifier("jdbcTemplate")
-    public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
     }
 
     @Autowired
