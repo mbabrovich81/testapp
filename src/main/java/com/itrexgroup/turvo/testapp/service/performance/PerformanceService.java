@@ -1,10 +1,10 @@
 package com.itrexgroup.turvo.testapp.service.performance;
 
-import com.itrexgroup.turvo.testapp.dao.MultiDatabaseDAO;
 import com.itrexgroup.turvo.testapp.dao.PerformanceQueueDAO;
 import com.itrexgroup.turvo.testapp.dao.ReportDAO;
 import com.itrexgroup.turvo.testapp.model.DatabaseEnum;
 import com.itrexgroup.turvo.testapp.model.report.ReportState;
+import com.itrexgroup.turvo.testapp.persistence.dao.JdbcMultiDatabaseDAO;
 import com.itrexgroup.turvo.testapp.service.job.PerformanceSchedulerJob;
 import com.itrexgroup.turvo.testapp.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
@@ -17,8 +17,6 @@ import org.springframework.stereotype.Service;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ForkJoinPool;
 
 import static org.quartz.JobBuilder.newJob;
@@ -34,7 +32,7 @@ import static org.quartz.TriggerBuilder.newTrigger;
 @Slf4j
 public class PerformanceService implements IPerformanceService {
 
-    private MultiDatabaseDAO multiDatabaseDAO;
+    private JdbcMultiDatabaseDAO multiDatabaseDAO;
 
     private ReportDAO reportDAO;
 
@@ -138,7 +136,7 @@ public class PerformanceService implements IPerformanceService {
 
             long start = System.nanoTime();
             // Execute performance
-            List<Map<String, Object>> list = multiDatabaseDAO.queryForList(db, query);
+            int listSize = multiDatabaseDAO.queryForList(db, query);
             long end = System.nanoTime();
 
             long endDate = System.currentTimeMillis();
@@ -147,7 +145,7 @@ public class PerformanceService implements IPerformanceService {
 
             long queryTime = end - start;
 
-            return getSuccessReportData(db, reportUid, queryTime, startDate, endDate, Utils.getResultMsg(list.size()));
+            return getSuccessReportData(db, reportUid, queryTime, startDate, endDate, Utils.getResultMsg(listSize));
         } catch (Exception e) {
             log.warn("[WARNING][{}][checkPerformance] Query {} can't be executed. Only 'select' performance. Db: {}"
                     , requestUid, query, db.name().toUpperCase(), e);
@@ -235,7 +233,7 @@ public class PerformanceService implements IPerformanceService {
     }
 
     @Autowired
-    public void setMultiDatabaseDAO(MultiDatabaseDAO multiDatabaseDAO) {
+    public void setMultiDatabaseDAO(JdbcMultiDatabaseDAO multiDatabaseDAO) {
         this.multiDatabaseDAO = multiDatabaseDAO;
     }
 
