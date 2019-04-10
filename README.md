@@ -46,7 +46,7 @@ The the result is a JSON with test data
 Developer Notes
 =================
 
-Need to create `quartz` database and create tables by file `quartz_tables.sql`.
+Need to create tables by file `quartz_tables.sql`.
 
 `application.properties` has control values:
 
