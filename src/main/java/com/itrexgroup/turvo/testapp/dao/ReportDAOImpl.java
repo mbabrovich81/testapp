@@ -64,7 +64,7 @@ public class ReportDAOImpl implements ReportDAO {
         try {
             namedParameterJdbcTemplate.update(INSERT_TABLE_TEST_PERFORMANCE_REPORT, Utils.reportToMap(report));
         } catch (DataAccessException e) {
-            log.error("[ERROR][ReportDAO][insertData] Insert data failed");
+            log.error("[ERROR][ReportDAO][insertData] Insert data failed.");
             throw e;
         }
     }
@@ -74,7 +74,7 @@ public class ReportDAOImpl implements ReportDAO {
         try {
             namedParameterJdbcTemplate.update(UPDATE_TABLE_TEST_PERFORMANCE_REPORT, Utils.reportToMap(report));
         } catch (DataAccessException e) {
-            log.error("[ERROR][ReportDAO][updateData] Update data failed");
+            log.error("[ERROR][ReportDAO][updateData] Update data failed.");
             throw e;
         }
     }
@@ -89,7 +89,7 @@ public class ReportDAOImpl implements ReportDAO {
 
             namedParameterJdbcTemplate.update(UPDATE_STATE, paramMap);
         } catch (DataAccessException e) {
-            log.error("[ERROR][ReportDAO][updateState] Update state failed");
+            log.error("[ERROR][ReportDAO][updateState] Update state failed.");
             throw e;
         }
     }

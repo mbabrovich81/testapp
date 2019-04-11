@@ -170,7 +170,7 @@ public class PerformanceService implements IPerformanceService {
             long queryTime = end - start;
 
             return getSuccessReportData(db, reportUid, queryTime, startDate, endDate, Utils.getResultMsg(list.size()));
-        } catch (Exception e) {
+        } catch (DataAccessException e) {
             // if query can't execute than return Report with error message
             log.warn("[WARNING][{}][checkPerformance] Query {} can't be executed. Only 'select' performance. Db: {}. Msg: {}"
                     , requestUid, query, db.name().toUpperCase(), e.getMessage());

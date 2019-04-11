@@ -70,7 +70,7 @@ public class CreateReportDAOImpl implements CreateReportDAO {
             // CREATE sequence seq_tbl_test_performance_queue_id
             jdbcTemplate.execute(CREATE_TABLE_TEST_PERFORMANCE_QUEUE);
         } catch (DataAccessException e) {
-            log.error("[ERROR][CreateReportDAO][createTableWithDropping] ", e);
+            log.error("[ERROR][CreateReportDAO][createTableWithDropping] Create tables failed.");
             throw e;
         }
     }

@@ -54,7 +54,7 @@ public class PerformanceQueueDAOImpl implements PerformanceQueueDAO {
         try {
             namedParameterJdbcTemplate.update(INSERT_TABLE_TEST_PERFORMANCE_QUEUE, Utils.performanceQueueToMap(queue));
         } catch (DataAccessException e) {
-            log.error("[ERROR][PerformanceQueueDAO][insertData] Insert data failed");
+            log.error("[ERROR][PerformanceQueueDAO][insertData] Insert data failed.");
             throw e;
         }
     }
@@ -68,7 +68,7 @@ public class PerformanceQueueDAOImpl implements PerformanceQueueDAO {
 
             namedParameterJdbcTemplate.update(UPDATE_ATTEMPTS_TABLE_TEST_PERFORMANCE_QUEUE, paramMap);
         } catch (DataAccessException e) {
-            log.error("[ERROR][PerformanceQueueDAO][updateData] Update data failed");
+            log.error("[ERROR][PerformanceQueueDAO][updateData] Update data failed.");
             throw e;
         }
     }
@@ -82,7 +82,7 @@ public class PerformanceQueueDAOImpl implements PerformanceQueueDAO {
 
             namedParameterJdbcTemplate.update(DELETE_TABLE_TEST_PERFORMANCE_QUEUE, paramMap);
         } catch (DataAccessException e) {
-            log.error("[ERROR][PerformanceQueueDAO][deleteData] Delete data failed");
+            log.error("[ERROR][PerformanceQueueDAO][deleteData] Delete data failed.");
             throw e;
         }
     }
@@ -92,7 +92,7 @@ public class PerformanceQueueDAOImpl implements PerformanceQueueDAO {
         try {
             namedParameterJdbcTemplate.update(DELETE_ALL, new HashMap<>());
         } catch (DataAccessException e) {
-            log.error("[ERROR][PerformanceQueueDAO][deleteAll] Delete all failed ");
+            log.error("[ERROR][PerformanceQueueDAO][deleteAll] Delete all failed.");
             throw e;
         }
     }

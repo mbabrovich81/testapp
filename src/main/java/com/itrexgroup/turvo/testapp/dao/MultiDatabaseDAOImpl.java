@@ -59,7 +59,7 @@ public class MultiDatabaseDAOImpl implements MultiDatabaseDAO {
                 jdbcTemplate.execute(CREATE_TABLE_TEST_TASK);
             }
         } catch (DataAccessException e) {
-            log.error("[ERROR][MultiDatabaseDAO][createTableWithDropping] ", e);
+            log.error("[ERROR][MultiDatabaseDAO][createTableWithDropping] Create tables failed.");
             throw e;
         }
     }
@@ -78,7 +78,7 @@ public class MultiDatabaseDAOImpl implements MultiDatabaseDAO {
                 jdbcTemplate.batchUpdate(INSERT_TABLE_TEST_TASK, values);
             }
         } catch (DataAccessException e) {
-            log.error("[ERROR][MultiDatabaseDAO][insertData] ", e);
+            log.error("[ERROR][MultiDatabaseDAO][insertData] Insert data failed.");
             throw e;
         }
     }
