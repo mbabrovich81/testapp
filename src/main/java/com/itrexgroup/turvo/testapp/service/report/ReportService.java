@@ -2,6 +2,7 @@ package com.itrexgroup.turvo.testapp.service.report;
 
 import com.itrexgroup.turvo.testapp.dao.PerformanceQueueDAO;
 import com.itrexgroup.turvo.testapp.dao.ReportDAO;
+import com.itrexgroup.turvo.testapp.exception.EmptyArgumentsException;
 import com.itrexgroup.turvo.testapp.model.queue.PerformanceQueueResult;
 import com.itrexgroup.turvo.testapp.model.report.ReportResult;
 import com.itrexgroup.turvo.testapp.model.report.ReportState;
@@ -16,6 +17,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -41,6 +43,11 @@ public class ReportService implements IReportService {
 
     @Override
     public List<ReportResult> getPerformanceReport(long requestUid, String reportUid) throws RuntimeException {
+
+        if (StringUtils.isEmpty(reportUid)) {
+            throw new EmptyArgumentsException("ReportUid can't be empty");
+        }
+
         log.info("[{}][getPerformanceReport] Start to get performance report. ReportUid: {}", requestUid, reportUid);
 
         // find performance report by the reportUid
@@ -81,12 +88,14 @@ public class ReportService implements IReportService {
         Set<JobKey> jobKeys = scheduler.getJobKeys(GroupMatcher.jobGroupEquals(Utils.SCHEDULER_JOB_GROUP));
 
         if (CollectionUtils.isEmpty(jobKeys)) {
+
             log.info("[removeAllJobs] There are No jobs of reports");
+
         } else {
             scheduler.deleteJobs(new LinkedList<>(jobKeys));
-        }
 
-        log.info("[removeAllJobs] Finish to remove all jobs of reports.");
+            log.info("[removeAllJobs] Finish to remove all jobs of reports.");
+        }
     }
 
     private ReportResult convertToReportResult(PerformanceQueueResult performanceQueue) {

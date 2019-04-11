@@ -12,10 +12,10 @@ public interface ICreateTableService {
      * fill tbl_test_task by default values
      * @param db - DatabaseEnum
      */
-    void createAndFillTable(DatabaseEnum db);
+    void createAndFillTable(DatabaseEnum db) throws RuntimeException;
 
     /**
      * Drop and create tbl_test_performance_report with sequence
      */
-    void createReportTables();
+    void createReportTables() throws RuntimeException;
 }

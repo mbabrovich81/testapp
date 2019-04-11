@@ -14,14 +14,14 @@ public interface MultiDatabaseDAO {
      * Drop and create tbl_test_task with sequence
      * @param db - DatabaseEnum
      */
-    void createTableWithDropping(DatabaseEnum db) throws Exception;
+    void createTableWithDropping(DatabaseEnum db) throws RuntimeException;
 
     /**
      * Insert data to tbl_test_task
      * @param db - DatabaseEnum
      * @param values - list of default values
      */
-    void insertData(DatabaseEnum db, List<Object[]> values) throws Exception;
+    void insertData(DatabaseEnum db, List<Object[]> values) throws RuntimeException;
 
     /**
      *  Execute SELECT query

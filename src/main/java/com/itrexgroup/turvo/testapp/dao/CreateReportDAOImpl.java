@@ -49,7 +49,7 @@ public class CreateReportDAOImpl implements CreateReportDAO {
     private JdbcTemplate jdbcTemplate;
 
     @Override
-    public void createTableWithDropping() throws Exception {
+    public void createTableWithDropping() throws RuntimeException {
 
         try {
             // DROP table tbl_test_performance_queue if exists
@@ -71,7 +71,7 @@ public class CreateReportDAOImpl implements CreateReportDAO {
             jdbcTemplate.execute(CREATE_TABLE_TEST_PERFORMANCE_QUEUE);
         } catch (DataAccessException e) {
             log.error("[ERROR][CreateReportDAO][createTableWithDropping] ", e);
-            throw new Exception(e);
+            throw e;
         }
     }
 

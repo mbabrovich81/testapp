@@ -30,34 +30,19 @@ public class ReportController {
     private IReportService reportService;
 
     @GetMapping("/query/performance/report")
-    public ResponseEntity<PerformanceReportDTO> getQueryPerformanceReport(@RequestParam(value = "r") String reportUid) {
+    public ResponseEntity<PerformanceReportDTO> getQueryPerformanceReport(@RequestParam(value = "r") String reportUid)
+            throws Exception {
 
         // fix the start time of the request and use it like requestUid
         long requestUid = System.nanoTime();
 
         log.info("[{}][query/performance/report] Start to get report: {}", requestUid, reportUid);
 
-        if (StringUtils.isEmpty(reportUid)) {
-            log.error("[{}][query/performance/report] Getting reportUid can't be empty.", requestUid);
-
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-
-        PerformanceReportDTO response;
-
-        try {
-            // start to get report
-            List<ReportResult> reportResults = reportService.getPerformanceReport(requestUid, reportUid);
-
-            response = convertToPerformanceReportDTO(reportResults, reportUid);
-        } catch (Exception e) {
-            log.error("[ERROR][{}][query/performance/report] Check query performance was failed. {} ", requestUid, reportUid, e);
-
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+        // start to get report
+        List<ReportResult> reportResults = reportService.getPerformanceReport(requestUid, reportUid);
 
         log.info("[{}][query/performance/report] Finish to get report: {}", requestUid, reportUid);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return new ResponseEntity<>(convertToPerformanceReportDTO(reportResults, reportUid), HttpStatus.OK);
     }
 
     private PerformanceReportDTO convertToPerformanceReportDTO(List<ReportResult> reportResults, String reportUid) {

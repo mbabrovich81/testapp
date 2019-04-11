@@ -1,6 +1,7 @@
 package com.itrexgroup.turvo.testapp.service.report;
 
 import com.itrexgroup.turvo.testapp.model.report.ReportResult;
+import org.quartz.SchedulerException;
 
 import java.util.List;
 
@@ -18,15 +19,15 @@ public interface IReportService {
      * @param reportUid - report uid
      * @return List of ReportResult
      */
-    List<ReportResult> getPerformanceReport(long requestUid, String reportUid) throws Exception;
+    List<ReportResult> getPerformanceReport(long requestUid, String reportUid) throws RuntimeException;
 
     /**
      *  Set failed state for report with state in_progress
      */
-    void setFailedForInProgressReports();
+    void setFailedForInProgressReports() throws RuntimeException;
 
     /**
      * Remove all scheduler (quartz) jobs
      */
-    void removeAllSchedulerJobs();
+    void removeAllSchedulerJobs() throws RuntimeException, SchedulerException;
 }

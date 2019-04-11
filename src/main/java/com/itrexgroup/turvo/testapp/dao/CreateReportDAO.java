@@ -7,8 +7,8 @@ public interface CreateReportDAO {
 
     /**
      * Drop and create tbl_test_task and tbl_test_performance_queue with their sequences
-     * @throws Exception
+     * @throws RuntimeException
      */
-    void createTableWithDropping() throws Exception;
+    void createTableWithDropping() throws RuntimeException;
     
 }

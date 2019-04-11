@@ -7,7 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,37 +22,21 @@ public class QueryController {
     private IPerformanceService performanceService;
 
     @GetMapping("/query/performance/check")
-    public ResponseEntity<QueryPerformanceDTO> checkQueryPerformance(@RequestParam(value = "q") String query) {
+    public ResponseEntity<QueryPerformanceDTO> checkQueryPerformance(@RequestParam(value = "q") String query)
+            throws Exception {
 
         // fix the start time of the request and use it like requestUid
         long requestUid = System.nanoTime();
 
         log.info("[{}][query/performance/check] Start to handle performance: {}", requestUid, query);
 
-        if (StringUtils.isEmpty(query)) {
-            log.error("[{}][query/performance/check] Checking query can't be empty.", requestUid);
+        // start to check performance
+        // get reportUid
+        String reportUid = performanceService.checkPerformance(requestUid, query);
 
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+        log.info("[{}][query/performance/check] Finish to handle performance: {} ", requestUid, query);
 
-        QueryPerformanceDTO response;
-
-        try {
-            // start to check performance
-            // get reportUid
-            String reportUid = performanceService.checkPerformance(requestUid, query);
-
-            response = convertToQueryPerformanceDTO(query, reportUid);
-
-            log.info("[{}][query/performance/check] Finish to handle performance: {} ", requestUid, query);
-
-        } catch (Exception e) {
-            log.error("[ERROR][{}][query/performance/check] Check query performance was failed. {} ", requestUid, query, e);
-
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return new ResponseEntity<>(convertToQueryPerformanceDTO(query, reportUid), HttpStatus.OK);
     }
 
     private QueryPerformanceDTO convertToQueryPerformanceDTO(String query, String reportUid) {

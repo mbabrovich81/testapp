@@ -1,6 +1,7 @@
 package com.itrexgroup.turvo.testapp.service.performance;
 
 import com.itrexgroup.turvo.testapp.model.DatabaseEnum;
+import org.quartz.SchedulerException;
 
 /**
  *
@@ -14,17 +15,9 @@ public interface IPerformanceService {
      * Check performance of DB performance
      * @param requestUid - request uid
      * @param query - String
-     * @return List of QueryResult
+     * @return report Uid
      */
-    String checkPerformance(long requestUid, String query) throws Exception;
-
-    /**
-     * Check performance of DB performance
-     * @param requestUid - request uid
-     * @param query - String
-     * @return List of QueryResult
-     */
-    void checkPerformance(long requestUid, DatabaseEnum db, String reportUid, String query) ;
+    String checkPerformance(long requestUid, String query) throws RuntimeException, SchedulerException;
 
     /**
      * Repeated check performance of DB performance
@@ -32,7 +25,14 @@ public interface IPerformanceService {
      * @param reportUid - report uid
      * @param timesTriggered - number of triggered
      * @param query - SQL query
-     * @throws Exception
      */
-    void repeatedCheckPerformance(long requestUid, String reportUid, int timesTriggered, String query) throws Exception;
+    void repeatedCheckPerformance(long requestUid, String reportUid, int timesTriggered, String query)
+            throws RuntimeException, SchedulerException;
+
+    /**
+     * Check performance of DB performance in parallel threads
+     * @param requestUid - request uid
+     * @param query - String
+     */
+    void asyncCheckPerformance(long requestUid, DatabaseEnum db, String reportUid, String query) ;
 }

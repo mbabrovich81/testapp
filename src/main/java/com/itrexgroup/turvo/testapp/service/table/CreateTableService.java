@@ -27,41 +27,33 @@ public class CreateTableService implements ICreateTableService {
 
     @Override
     @Transactional
-    public void createAndFillTable(DatabaseEnum db) {
+    public void createAndFillTable(DatabaseEnum db) throws RuntimeException {
 
-        try {
-            log.info("[createAndFillTable] Start to preloading {} database", db.name().toUpperCase());
-            log.info("[createAndFillTable] Creating (and dropping before if exists) tables. Db: {}", db.name().toUpperCase());
-            // drop and create tbl_test_task with sequence
-            multiDatabaseDAO.createTableWithDropping(db);
+        log.info("[createAndFillTable] Start to preloading {} database", db.name().toUpperCase());
+        log.info("[createAndFillTable] Creating (and dropping before if exists) tables. Db: {}", db.name().toUpperCase());
+        // drop and create tbl_test_task with sequence
+        multiDatabaseDAO.createTableWithDropping(db);
 
-            // generate default values for table (field 'name')
-            List<Object[]> names = new ArrayList<>();
+        // generate default values for table (field 'name')
+        List<Object[]> names = new ArrayList<>();
 
-            for (int i = 0; i < db.getRows(); i++) {
-                names.add(new Object[]{"name-" + i});
-            }
-
-            // fill tbl_test_task by default values from list 'names'
-            log.info("[createAndFillTable] Insert default values tables. Db: {}", db.name().toUpperCase());
-            multiDatabaseDAO.insertData(db, names);
-            log.info("[createAndFillTable] Default values inserted. Db: {}", db.name().toUpperCase());
-        } catch (Exception e) {
-            log.error("[ERROR][createAndFillTable] Create and fill table was failed. {} ", db.name().toUpperCase(), e);
+        for (int i = 0; i < db.getRows(); i++) {
+            names.add(new Object[]{"name-" + i});
         }
+
+        // fill tbl_test_task by default values from list 'names'
+        log.info("[createAndFillTable] Insert default values tables. Db: {}", db.name().toUpperCase());
+        multiDatabaseDAO.insertData(db, names);
+        log.info("[createAndFillTable] Default values inserted. Db: {}", db.name().toUpperCase());
     }
 
     @Override
     @Transactional
-    public void createReportTables() {
+    public void createReportTables() throws RuntimeException {
 
-        try {
-            log.info("[createReportTables] Creating (and dropping before if exists) report tables");
-            // drop and create tbl_test_task with sequence
-            createReportDAO.createTableWithDropping();
-        } catch (Exception e) {
-            log.error("[ERROR][createReportTables] Create report tables was failed.", e);
-        }
+        log.info("[createReportTables] Creating (and dropping before if exists) report tables");
+        // drop and create tbl_test_task with sequence
+        createReportDAO.createTableWithDropping();
     }
 
     @Autowired

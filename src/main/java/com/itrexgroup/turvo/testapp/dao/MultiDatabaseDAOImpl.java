@@ -42,7 +42,7 @@ public class MultiDatabaseDAOImpl implements MultiDatabaseDAO {
     private int queryTimeout;
 
     @Override
-    public void createTableWithDropping(DatabaseEnum db) throws Exception {
+    public void createTableWithDropping(DatabaseEnum db) throws RuntimeException {
 
         try {
             // get JdbcTemplate for specific database
@@ -60,12 +60,12 @@ public class MultiDatabaseDAOImpl implements MultiDatabaseDAO {
             }
         } catch (DataAccessException e) {
             log.error("[ERROR][MultiDatabaseDAO][createTableWithDropping] ", e);
-            throw new Exception(e);
+            throw e;
         }
     }
 
     @Override
-    public void insertData(DatabaseEnum db, List<Object[]> values) throws Exception {
+    public void insertData(DatabaseEnum db, List<Object[]> values) throws RuntimeException {
 
         try {
             JdbcTemplate jdbcTemplate = getJdbcTemplate(db);
@@ -79,7 +79,7 @@ public class MultiDatabaseDAOImpl implements MultiDatabaseDAO {
             }
         } catch (DataAccessException e) {
             log.error("[ERROR][MultiDatabaseDAO][insertData] ", e);
-            throw new Exception(e);
+            throw e;
         }
     }
 

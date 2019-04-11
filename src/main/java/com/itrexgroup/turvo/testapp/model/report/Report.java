@@ -2,7 +2,6 @@ package com.itrexgroup.turvo.testapp.model.report;
 
 import com.itrexgroup.turvo.testapp.model.DatabaseEnum;
 import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
 
 import java.sql.Timestamp;
@@ -11,22 +10,30 @@ import java.sql.Timestamp;
 @Builder
 public class Report {
 
+    // report uid
     private String reportUid;
 
-    private String state;
+    // report state
+    private ReportState state;
 
-    private String databaseName;
-
+    //duration time in nanos
     private Long timeInNanos;
 
+    // database
+    private DatabaseEnum databaseName;
+
+    //start date
     private Timestamp startDate;
 
+    //end date
     private Timestamp endDate;
 
+    //created date
     private Timestamp createdDate;
 
+    // query
     private String query;
 
+    // result message
     private String resMsg;
-
 }

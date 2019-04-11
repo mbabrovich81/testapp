@@ -3,6 +3,7 @@ package com.itrexgroup.turvo.testapp.service.performance;
 import com.itrexgroup.turvo.testapp.dao.MultiDatabaseDAO;
 import com.itrexgroup.turvo.testapp.dao.PerformanceQueueDAO;
 import com.itrexgroup.turvo.testapp.dao.ReportDAO;
+import com.itrexgroup.turvo.testapp.exception.EmptyArgumentsException;
 import com.itrexgroup.turvo.testapp.model.DatabaseEnum;
 import com.itrexgroup.turvo.testapp.model.queue.PerformanceQueue;
 import com.itrexgroup.turvo.testapp.model.report.Report;
@@ -16,6 +17,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.sql.Timestamp;
 import java.util.Arrays;
@@ -55,6 +57,11 @@ public class PerformanceService implements IPerformanceService {
 
     @Override
     public String checkPerformance(long requestUid, String query) throws RuntimeException, SchedulerException {
+
+        if (StringUtils.isEmpty(query)) {
+            throw new EmptyArgumentsException("Query can't be empty");
+        }
+
         log.info("[{}][checkPerformance] Start to check performance. Query: {}", requestUid, query);
         // generate unique report uid
         String reportUid =  Utils.generateUuid();
@@ -199,7 +206,7 @@ public class PerformanceService implements IPerformanceService {
         return Report.builder()
                 .reportUid(reportUid)
                 .state(ReportState.in_progress)
-                .databaseName(db.name())
+                .databaseName(db)
                 .createdDate(new Timestamp(System.currentTimeMillis()))
                 .query(query)
                 .build();
@@ -215,7 +222,7 @@ public class PerformanceService implements IPerformanceService {
                 .endDate(new Timestamp(endDate))
                 .resMsg(resMsg)
                 .reportUid(reportUid)
-                .databaseName(db.name())
+                .databaseName(db)
                 .build();
     }
 
@@ -224,7 +231,7 @@ public class PerformanceService implements IPerformanceService {
                 .state(ReportState.failed)
                 .resMsg(errMsg)
                 .reportUid(reportUid)
-                .databaseName(db.name())
+                .databaseName(db)
                 .build();
     }
 

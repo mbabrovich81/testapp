@@ -31,7 +31,7 @@ public interface PerformanceQueueDAO {
 
     /**
      * Delete all from tbl_test_performance_queue
-     * @throws Exception
+     * @throws RuntimeException
      */
     void deleteAll() throws RuntimeException;
 
