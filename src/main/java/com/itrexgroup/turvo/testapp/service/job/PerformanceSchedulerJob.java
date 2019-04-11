@@ -1,6 +1,6 @@
 package com.itrexgroup.turvo.testapp.service.job;
 
-import com.itrexgroup.turvo.testapp.service.performance.IPerformanceService;
+import com.itrexgroup.turvo.testapp.service.performance.PerformanceService;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobDataMap;
@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
 @DisallowConcurrentExecution
 public class PerformanceSchedulerJob extends QuartzJobBean {
 
-    private IPerformanceService performanceService;
+    private PerformanceService performanceService;
 
     @Override
     protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
@@ -46,7 +46,7 @@ public class PerformanceSchedulerJob extends QuartzJobBean {
     }
 
     @Autowired
-    public void setPerformanceService(IPerformanceService performanceService) {
+    public void setPerformanceService(PerformanceService performanceService) {
         this.performanceService = performanceService;
     }
 

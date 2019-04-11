@@ -1,7 +1,7 @@
 package com.itrexgroup.turvo.testapp.controller.query;
 
 import com.itrexgroup.turvo.testapp.controller.dto.QueryPerformanceDTO;
-import com.itrexgroup.turvo.testapp.service.performance.IPerformanceService;
+import com.itrexgroup.turvo.testapp.service.performance.PerformanceService;
 import com.itrexgroup.turvo.testapp.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 public class QueryController {
 
-    private IPerformanceService performanceService;
+    private PerformanceService performanceService;
 
     @GetMapping("/query/performance/check")
     public ResponseEntity<QueryPerformanceDTO> checkQueryPerformance(@RequestParam(value = "q") String query)
@@ -44,7 +44,7 @@ public class QueryController {
     }
 
     @Autowired
-    public void setPerformanceService(IPerformanceService performanceService) {
+    public void setPerformanceService(PerformanceService performanceService) {
         this.performanceService = performanceService;
     }
 }

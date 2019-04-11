@@ -4,7 +4,7 @@ import com.itrexgroup.turvo.testapp.controller.dto.PerformanceReportDTO;
 import com.itrexgroup.turvo.testapp.controller.dto.ReportItemDTO;
 import com.itrexgroup.turvo.testapp.model.report.ReportResult;
 import com.itrexgroup.turvo.testapp.model.report.ReportState;
-import com.itrexgroup.turvo.testapp.service.report.IReportService;
+import com.itrexgroup.turvo.testapp.service.report.ReportService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,7 +27,7 @@ import java.util.List;
 @Slf4j
 public class ReportController {
 
-    private IReportService reportService;
+    private ReportService reportService;
 
     @GetMapping("/query/performance/report")
     public ResponseEntity<PerformanceReportDTO> getQueryPerformanceReport(@RequestParam(value = "r") String reportUid)
@@ -73,7 +73,7 @@ public class ReportController {
     }
 
     @Autowired
-    public void setReportService(IReportService reportService) {
+    public void setReportService(ReportService reportService) {
         this.reportService = reportService;
     }
 }

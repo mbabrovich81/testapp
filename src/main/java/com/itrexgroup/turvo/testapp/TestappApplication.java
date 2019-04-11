@@ -1,8 +1,8 @@
 package com.itrexgroup.turvo.testapp;
 
 import com.itrexgroup.turvo.testapp.model.DatabaseEnum;
-import com.itrexgroup.turvo.testapp.service.report.IReportService;
-import com.itrexgroup.turvo.testapp.service.table.ICreateTableService;
+import com.itrexgroup.turvo.testapp.service.report.ReportService;
+import com.itrexgroup.turvo.testapp.service.table.CreateTableService;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,12 +10,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.event.ContextStartedEvent;
+import org.springframework.context.event.ContextStoppedEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @SpringBootApplication
 @EnableTransactionManagement
 @Slf4j
-public class TestappApplication implements CommandLineRunner {
+public class TestappApplication {
 
     @Value("${turvo.preload.database}")
     private boolean preloadDatabase;
@@ -23,17 +27,16 @@ public class TestappApplication implements CommandLineRunner {
     @Value("${turvo.quartz.jobs.remove}")
     private boolean removeAllJobs;
 
-    private ICreateTableService createTableService;
+    private CreateTableService createTableService;
 
-    private IReportService reportService;
+    private ReportService reportService;
 
     public static void main(String[] args) {
         SpringApplication.run(TestappApplication.class, args);
     }
 
-    @Override
-    public void run(String... strings) throws Exception {
-
+    @EventListener(classes = { ContextRefreshedEvent.class })
+    public void handleContextRefreshEvent() {
         if (removeAllJobs) {
             try {
                 // remove all scheduler (quartz) jobs
@@ -70,12 +73,12 @@ public class TestappApplication implements CommandLineRunner {
     }
 
     @Autowired
-    public void setCreateTableService(ICreateTableService createTableService) {
+    public void setCreateTableService(CreateTableService createTableService) {
         this.createTableService = createTableService;
     }
 
     @Autowired
-    public void setReportService(IReportService reportService) {
+    public void setReportService(ReportService reportService) {
         this.reportService = reportService;
     }
 }
