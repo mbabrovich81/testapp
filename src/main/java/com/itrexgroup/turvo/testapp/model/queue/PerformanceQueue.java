@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.sql.Timestamp;
+import java.util.Date;
 
 @Getter
 @Builder
@@ -16,7 +17,7 @@ public class PerformanceQueue {
     private int attemptsNum;
 
     //created date
-    private Timestamp createdDate;
+    private Date createdDate;
 
     // query
     private String query;

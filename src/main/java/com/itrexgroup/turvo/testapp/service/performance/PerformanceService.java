@@ -207,7 +207,7 @@ public class PerformanceService implements IPerformanceService {
                 .reportUid(reportUid)
                 .state(ReportState.in_progress)
                 .databaseName(db)
-                .createdDate(new Timestamp(System.currentTimeMillis()))
+                .createdDate(new Date(System.currentTimeMillis()))
                 .query(query)
                 .build();
     }
@@ -218,8 +218,8 @@ public class PerformanceService implements IPerformanceService {
         return Report.builder()
                 .state(ReportState.success)
                 .timeInNanos(queryTime)
-                .startDate(new Timestamp(startDate))
-                .endDate(new Timestamp(endDate))
+                .startDate(new Date(startDate))
+                .endDate(new Date(endDate))
                 .resMsg(resMsg)
                 .reportUid(reportUid)
                 .databaseName(db)
@@ -238,7 +238,7 @@ public class PerformanceService implements IPerformanceService {
     private PerformanceQueue getNewPerformanceQueueData(String reportUid, String query) {
         return PerformanceQueue.builder()
                 .reportUid(reportUid)
-                .createdDate(new Timestamp(System.currentTimeMillis()))
+                .createdDate(new Date(System.currentTimeMillis()))
                 .query(query)
                 .build();
     }

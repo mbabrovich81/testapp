@@ -9,9 +9,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.Date;
 
 /**
  * Created by maxim.babrovich on 10.04.2019.
@@ -19,32 +21,27 @@ import java.sql.Timestamp;
 
 @ControllerAdvice(basePackages = "com.itrexgroup.turvo.testapp.controller")
 @Slf4j
-public class ExceptionHandlerController {
+public class ExceptionHandlerController extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler({ MissingServletRequestParameterException.class })
-    public ResponseEntity<ResponseError> handleBadRequest(MissingServletRequestParameterException ex) {
-        return new ResponseEntity<>(buildResponseError(HttpStatus.BAD_REQUEST, ex.getMessage()), HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler({ EmptyArgumentsException.class })
+    @ExceptionHandler(value = { EmptyArgumentsException.class })
     public ResponseEntity<ResponseError> handleEmptyArgumentException(EmptyArgumentsException ex) {
         log.error("Empty argument error", ex);
         return new ResponseEntity<>(buildResponseError(HttpStatus.BAD_REQUEST, ex.getMessage()), HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler({ SQLException.class, DataAccessException.class })
+    @ExceptionHandler(value = { SQLException.class, DataAccessException.class })
     public ResponseEntity<ResponseError> handleDatabaseException(Exception ex) {
         log.error("Database error", ex);
         return new ResponseEntity<>(buildResponseError(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @ExceptionHandler({ SchedulerException.class })
+    @ExceptionHandler(value = { SchedulerException.class })
     public ResponseEntity<ResponseError> handleSchedulerException(SchedulerException ex) {
         log.error("Scheduler error", ex);
         return new ResponseEntity<>(buildResponseError(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @ExceptionHandler({ Exception.class })
+    @ExceptionHandler(value = { Exception.class })
     public ResponseEntity<ResponseError> handleServerError(Exception ex) {
         log.error("Server error", ex);
         return new ResponseEntity<>(buildResponseError(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -55,7 +52,7 @@ public class ExceptionHandlerController {
                 .errorCode(httpStatus.value())
                 .errorStatus(httpStatus.getReasonPhrase())
                 .errorMsg(message)
-                .timestamp(new Timestamp(System.currentTimeMillis()))
+                .timestamp(new Date(System.currentTimeMillis()))
                 .build();
 
         log.error(responseError.toString());

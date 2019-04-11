@@ -7,7 +7,9 @@ import com.itrexgroup.turvo.testapp.model.report.Report;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 
+import java.lang.reflect.Field;
 import java.math.BigInteger;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -41,35 +43,39 @@ public class Utils {
     }
 
     public static Map<String, Object> reportToMap(Report report) {
-        ObjectMapper mapper = new ObjectMapper();
+        return new HashMap<String, Object>() {{
+            put("reportUid", report.getReportUid());
 
-        Map<String, Object> result = mapper.convertValue(report, Map.class);
+            put("state", report.getState().name());
 
-        if (report.getCreatedDate() != null) {
-            result.put("createdDate", report.getCreatedDate());
-        }
+            put("timeInNanos", report.getTimeInNanos());
 
-        if (report.getStartDate() != null) {
-            result.put("startDate", report.getStartDate());
-        }
+            put("databaseName", report.getDatabaseName().name());
 
-        if (report.getEndDate() != null) {
-            result.put("endDate", report.getEndDate());
-        }
+            put("startDate", report.getStartDate());
 
-        return result;
+            put("endDate", report.getEndDate());
+
+            put("createdDate", report.getCreatedDate());
+
+            put("query", report.getQuery());
+
+            put("resMsg", report.getResMsg());
+
+        }};
     }
 
     public static Map<String, Object> performanceQueueToMap(PerformanceQueue queue) {
-        ObjectMapper mapper = new ObjectMapper();
 
-        Map<String, Object> result = mapper.convertValue(queue, Map.class);
+        return new HashMap<String, Object>() {{
+            put("reportUid", queue.getReportUid());
 
-        if (queue.getCreatedDate() != null) {
-            result.put("createdDate", queue.getCreatedDate());
-        }
+            put("attemptsNum", queue.getAttemptsNum());
 
-        return result;
+            put("createdDate", queue.getCreatedDate());
+
+            put("query", queue.getQuery());
+        }};
     }
 
     public static String getReportLink(String reportUid) {

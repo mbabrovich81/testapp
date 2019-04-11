@@ -1,10 +1,10 @@
 package com.itrexgroup.turvo.testapp.model.report;
 
 import com.itrexgroup.turvo.testapp.model.DatabaseEnum;
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 
 import java.sql.Timestamp;
+import java.util.Date;
 
 @Getter
 @Builder
@@ -23,13 +23,13 @@ public class Report {
     private DatabaseEnum databaseName;
 
     //start date
-    private Timestamp startDate;
+    private Date startDate;
 
     //end date
-    private Timestamp endDate;
+    private Date endDate;
 
     //created date
-    private Timestamp createdDate;
+    private Date createdDate;
 
     // query
     private String query;
