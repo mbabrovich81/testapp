@@ -9,6 +9,7 @@ import com.itrexgroup.turvo.testapp.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.JobKey;
 import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
 import org.quartz.impl.matchers.GroupMatcher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -16,7 +17,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Report service.
@@ -37,26 +40,19 @@ public class ReportService implements IReportService {
     private int repeatCount;
 
     @Override
-    public List<ReportResult> getPerformanceReport(long requestUid, String reportUid) throws Exception {
+    public List<ReportResult> getPerformanceReport(long requestUid, String reportUid) throws RuntimeException {
         log.info("[{}][getPerformanceReport] Start to get performance report. ReportUid: {}", requestUid, reportUid);
 
-        List<ReportResult> result;
+        // find performance report by the reportUid
+        List<ReportResult> result = reportDAO.findByReportUid(reportUid);
 
-        try {
-            // find performance report by the reportUid
-            result = reportDAO.findByReportUid(reportUid);
+        if (CollectionUtils.isEmpty(result)) {
+            PerformanceQueueResult performanceQueue = performanceQueueDAO.findByReportUid(reportUid);
 
-            if (CollectionUtils.isEmpty(result)) {
-                PerformanceQueueResult performanceQueue = performanceQueueDAO.findByReportUid(reportUid);
-
-                if (performanceQueue != null
-                        && performanceQueue.getAttemptsNum() < repeatCount) {
-                    result.add(convertToReportResult(performanceQueue));
-                }
+            if (performanceQueue != null
+                    && performanceQueue.getAttemptsNum() < repeatCount) {
+                result.add(convertToReportResult(performanceQueue));
             }
-        } catch (Exception e) {
-            log.error("[ERROR][{}][getPerformanceReport] Get report of query performance was failed. {} ", requestUid, reportUid, e);
-            throw new Exception(e);
         }
 
         log.info("[{}][getPerformanceReport] Finish to get performance report. ReportUid: {}", requestUid, reportUid);
@@ -65,42 +61,29 @@ public class ReportService implements IReportService {
     }
 
     @Override
-    public void setFailedForInProgressReports() {
+    public void setFailedForInProgressReports() throws RuntimeException {
         log.info("[setFailedForInProgressReports] Start to set 'failed' for ' in_progress' reports.");
 
-        try {
-            // Change state for reports (in_progress to failed)
-            reportDAO.updateState(ReportState.failed, ReportState.in_progress);
-
-        } catch (Exception e) {
-            log.error("[ERROR][setFailedForInProgressReports] Set 'failed' for ' in_progress' reports was failed.", e);
-        }
+        // Change state for reports (in_progress to failed)
+        reportDAO.updateState(ReportState.failed, ReportState.in_progress);
 
         log.info("[setFailedForInProgressReports] Finish to set 'failed' for ' in_progress' reports.");
     }
 
     @Override
-    public void removeAllSchedulerJobs() {
+    public void removeAllSchedulerJobs() throws RuntimeException, SchedulerException {
         log.info("[removeAllJobs] Start to remove all jobs of reports.");
 
-        try {
-            // delete all queue data from DB
-            performanceQueueDAO.deleteAll();
-        } catch (Exception e) {
-            log.error("[ERROR][removeAllJobs] Remove queues of reports {} was failed.", e);
-        }
+        // delete all queue data from DB
+        performanceQueueDAO.deleteAll();
 
-        try {
-            // delete Performance job
-            Set<JobKey> jobKeys = scheduler.getJobKeys(GroupMatcher.jobGroupEquals(Utils.SCHEDULER_JOB_GROUP));
-            if (CollectionUtils.isEmpty(jobKeys)) {
+        // delete Performance job
+        Set<JobKey> jobKeys = scheduler.getJobKeys(GroupMatcher.jobGroupEquals(Utils.SCHEDULER_JOB_GROUP));
 
-                log.info("[removeAllJobs] There are No jobs of reports");
-            }
+        if (CollectionUtils.isEmpty(jobKeys)) {
+            log.info("[removeAllJobs] There are No jobs of reports");
+        } else {
             scheduler.deleteJobs(new LinkedList<>(jobKeys));
-
-        } catch (Exception e) {
-            log.error("[ERROR][removeAllJobs] Delete all quartz jobs of reports was failed.", e);
         }
 
         log.info("[removeAllJobs] Finish to remove all jobs of reports.");

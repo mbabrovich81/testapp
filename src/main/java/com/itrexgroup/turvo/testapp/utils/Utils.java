@@ -2,6 +2,8 @@ package com.itrexgroup.turvo.testapp.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.itrexgroup.turvo.testapp.model.queue.PerformanceQueue;
+import com.itrexgroup.turvo.testapp.model.report.Report;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 
@@ -38,9 +40,36 @@ public class Utils {
         }
     }
 
-    public static Map<String, Object> toMap(Object obj) {
+    public static Map<String, Object> reportToMap(Report report) {
         ObjectMapper mapper = new ObjectMapper();
-        return mapper.convertValue(obj, Map.class);
+
+        Map<String, Object> result = mapper.convertValue(report, Map.class);
+
+        if (report.getCreatedDate() != null) {
+            result.put("createdDate", report.getCreatedDate());
+        }
+
+        if (report.getStartDate() != null) {
+            result.put("startDate", report.getStartDate());
+        }
+
+        if (report.getEndDate() != null) {
+            result.put("endDate", report.getEndDate());
+        }
+
+        return result;
+    }
+
+    public static Map<String, Object> performanceQueueToMap(PerformanceQueue queue) {
+        ObjectMapper mapper = new ObjectMapper();
+
+        Map<String, Object> result = mapper.convertValue(queue, Map.class);
+
+        if (queue.getCreatedDate() != null) {
+            result.put("createdDate", queue.getCreatedDate());
+        }
+
+        return result;
     }
 
     public static String getReportLink(String reportUid) {

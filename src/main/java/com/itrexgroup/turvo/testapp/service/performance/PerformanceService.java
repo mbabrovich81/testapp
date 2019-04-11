@@ -14,10 +14,14 @@ import org.quartz.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ForkJoinPool;
 
 import static org.quartz.JobBuilder.newJob;
@@ -50,7 +54,7 @@ public class PerformanceService implements IPerformanceService {
     private int repeatCount;
 
     @Override
-    public String checkPerformance(long requestUid, String query) throws Exception {
+    public String checkPerformance(long requestUid, String query) throws RuntimeException, SchedulerException {
         log.info("[{}][checkPerformance] Start to check performance. Query: {}", requestUid, query);
         // generate unique report uid
         String reportUid =  Utils.generateUuid();
@@ -61,10 +65,11 @@ public class PerformanceService implements IPerformanceService {
         // if there aren't reports in progress (count == 0, all databases are free)
         if (countInProgress == 0) {
 
+            // Start to check performance in parallel threads for every databases
             ForkJoinPool forkJoinPool = new ForkJoinPool(DatabaseEnum.values().length);
 
             forkJoinPool.submit(() -> Arrays.stream(DatabaseEnum.values()).parallel().forEach(db -> {
-                performanceService.checkPerformance(requestUid, db, reportUid, query);
+                performanceService.asyncCheckPerformance(requestUid, db, reportUid, query);
             }));
         } else {
             // if there are some reports in progress (count > 0, some databases are busy)
@@ -83,8 +88,10 @@ public class PerformanceService implements IPerformanceService {
     }
 
     @Override
-    public void repeatedCheckPerformance(long requestUid, String reportUid, int timesTriggered, String query) throws Exception {
-        log.info("[{}][repeatedCheckPerformance] Start to repeated check performance. ReportUid {}. Query: {}", requestUid, reportUid, query);
+    public void repeatedCheckPerformance(long requestUid, String reportUid, int timesTriggered, String query)
+            throws RuntimeException, SchedulerException {
+        log.info("[{}][repeatedCheckPerformance] Start to repeated check performance. ReportUid {}. Query: {}"
+                , requestUid, reportUid, query);
 
         // count of reports with state 'in_progress'
         long countInProgress = reportDAO.countInProgress().orElse(0L);
@@ -94,10 +101,11 @@ public class PerformanceService implements IPerformanceService {
 
             deletePerformanceQueue(requestUid, reportUid);
 
+            // Start to check performance in parallel threads for every databases
             ForkJoinPool forkJoinPool = new ForkJoinPool(DatabaseEnum.values().length);
 
             forkJoinPool.submit(() -> Arrays.stream(DatabaseEnum.values()).parallel().forEach(db -> {
-                performanceService.checkPerformance(requestUid, db, reportUid, query);
+                performanceService.asyncCheckPerformance(requestUid, db, reportUid, query);
             }));
         } else {
             // if there are some reports in progress (count > 0, some databases are busy)
@@ -113,7 +121,7 @@ public class PerformanceService implements IPerformanceService {
     }
 
     @Override
-    public void checkPerformance(long requestUid, DatabaseEnum db, String reportUid, String query) {
+    public void asyncCheckPerformance(long requestUid, DatabaseEnum db, String reportUid, String query) {
         log.info("[{}][checkPerformance] Start to execute performance {}. Db: {}", requestUid, query, db.name().toUpperCase());
 
         try {
@@ -123,14 +131,22 @@ public class PerformanceService implements IPerformanceService {
 
             reportDAO.updateData(performanceReport);
 
-        } catch (Exception e) {
-            log.error("[ERROR][{}][checkPerformance] Executing performance {} was failed. Db: {}"
-                    , requestUid, query, db.name().toUpperCase(), e);
+        } catch (DataAccessException e) {
+            log.error("[ERROR][{}][checkPerformance] Insert/update performance report {} was failed. Db: {}"
+                    , requestUid, reportUid, db.name().toUpperCase(), e);
         }
 
         log.info("[{}][checkPerformance] Finish to execute performance {}. Db: {}", requestUid, query, db.name().toUpperCase());
     }
 
+    /**
+     * Execute method for checking performance of query
+     * @param requestUid - requestUid
+     * @param db - database
+     * @param reportUid - reportUid
+     * @param query - SQL query
+     * @return Report entity
+     */
     private Report executeCheckingPerformance(long requestUid, DatabaseEnum db, String reportUid, String query) {
         try {
             long startDate = System.currentTimeMillis();
@@ -147,33 +163,33 @@ public class PerformanceService implements IPerformanceService {
             long queryTime = end - start;
 
             return getSuccessReportData(db, reportUid, queryTime, startDate, endDate, Utils.getResultMsg(list.size()));
-        } catch (RuntimeException e) {
-            log.warn("[WARNING][{}][checkPerformance] Query {} can't be executed. Only 'select' performance. Db: {}"
-                    , requestUid, query, db.name().toUpperCase(), e);
+        } catch (Exception e) {
+            // if query can't execute than return Report with error message
+            log.warn("[WARNING][{}][checkPerformance] Query {} can't be executed. Only 'select' performance. Db: {}. Msg: {}"
+                    , requestUid, query, db.name().toUpperCase(), e.getMessage());
 
             return getErrorReportData(db, reportUid, Utils.toJson(e));
         }
     }
 
-    private void deletePerformanceQueue(long requestUid, String reportUid) {
+    private void deletePerformanceQueue(long requestUid, String reportUid) throws RuntimeException, SchedulerException {
         log.info("[{}][deletePerformanceQueue] Start to remove job of report {}.", requestUid, reportUid);
 
-        try {
-            // delete queue data from DB
-            performanceQueueDAO.deleteData(reportUid);
+        // delete queue data from DB
+        performanceQueueDAO.deleteData(reportUid);
 
-            // delete Performance job
-            JobKey jobKey = JobKey.jobKey(reportUid, Utils.SCHEDULER_JOB_GROUP);
-            JobDetail jobDetail = scheduler.getJobDetail(jobKey);
+        // delete Performance job
+        JobKey jobKey = JobKey.jobKey(reportUid, Utils.SCHEDULER_JOB_GROUP);
+        JobDetail jobDetail = scheduler.getJobDetail(jobKey);
 
-            log.info("[{}][deletePerformanceQueue] Performance job key {} to delete", requestUid, jobKey);
+        log.info("[{}][deletePerformanceQueue] Performance job key {} to delete", requestUid, jobKey);
 
-            if (jobDetail != null) {
-                scheduler.deleteJob(jobKey);
-                log.info("[{}][deletePerformanceQueue] Performance job {} successfully deleted", requestUid, jobKey);
-            }
-        } catch (Exception e) {
-            log.error("[ERROR][{}][deletePerformanceQueue] Delete quartz job of report {} was failed.", requestUid, reportUid, e);
+        if (jobDetail != null) {
+
+            scheduler.deleteJob(jobKey);
+
+            log.info("[{}][deletePerformanceQueue] Performance job {} successfully deleted", requestUid, jobKey);
+
         }
 
         log.info("[{}][deletePerformanceQueue] Finish to remove queue and job of report {}.", requestUid, reportUid);
@@ -182,7 +198,7 @@ public class PerformanceService implements IPerformanceService {
     private Report getNewReportData(DatabaseEnum db, String reportUid, String query) {
         return Report.builder()
                 .reportUid(reportUid)
-                .state(ReportState.in_progress.name())
+                .state(ReportState.in_progress)
                 .databaseName(db.name())
                 .createdDate(new Timestamp(System.currentTimeMillis()))
                 .query(query)
@@ -193,7 +209,7 @@ public class PerformanceService implements IPerformanceService {
             , long startDate, long endDate, String resMsg) {
 
         return Report.builder()
-                .state(ReportState.success.name())
+                .state(ReportState.success)
                 .timeInNanos(queryTime)
                 .startDate(new Timestamp(startDate))
                 .endDate(new Timestamp(endDate))
@@ -205,7 +221,7 @@ public class PerformanceService implements IPerformanceService {
 
     private  Report getErrorReportData(DatabaseEnum db, String reportUid, String errMsg) {
         return Report.builder()
-                .state(ReportState.failed.name())
+                .state(ReportState.failed)
                 .resMsg(errMsg)
                 .reportUid(reportUid)
                 .databaseName(db.name())

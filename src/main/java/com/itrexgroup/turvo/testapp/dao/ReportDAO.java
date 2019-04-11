@@ -5,7 +5,6 @@ import com.itrexgroup.turvo.testapp.model.report.ReportResult;
 import com.itrexgroup.turvo.testapp.model.report.ReportState;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -16,24 +15,24 @@ public interface ReportDAO {
     /**
      * Insert data to tbl_test_performance_report
      * @param report - report
-     * @throws Exception     *
+     * @throws RuntimeException     *
      */
-    void insertData(Report report) throws Exception;
+    void insertData(Report report) throws RuntimeException;
 
     /**
      * Update data in tbl_test_performance_report
      * @param report - report
-     * @throws Exception
+     * @throws RuntimeException
      */
-    void updateData(Report report) throws Exception;
+    void updateData(Report report) throws RuntimeException;
 
     /**
      * Update state in tbl_test_performance_report
      * @param target - target state
      * @param source - source state
-     * @throws Exception
+     * @throws RuntimeException
      */
-    void updateState(ReportState target, ReportState source) throws Exception;
+    void updateState(ReportState target, ReportState source) throws RuntimeException;
 
     /**
      *  Count reports with state in_progress

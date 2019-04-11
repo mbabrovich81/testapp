@@ -2,7 +2,6 @@ package com.itrexgroup.turvo.testapp.dao;
 
 import com.itrexgroup.turvo.testapp.model.queue.PerformanceQueue;
 import com.itrexgroup.turvo.testapp.model.queue.PerformanceQueueResult;
-import com.itrexgroup.turvo.testapp.model.report.ReportState;
 import com.itrexgroup.turvo.testapp.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,17 +50,17 @@ public class PerformanceQueueDAOImpl implements PerformanceQueueDAO {
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     @Override
-    public void insertData(PerformanceQueue queue) throws Exception {
+    public void insertData(PerformanceQueue queue) throws RuntimeException {
         try {
-            namedParameterJdbcTemplate.update(INSERT_TABLE_TEST_PERFORMANCE_QUEUE, Utils.toMap(queue));
+            namedParameterJdbcTemplate.update(INSERT_TABLE_TEST_PERFORMANCE_QUEUE, Utils.performanceQueueToMap(queue));
         } catch (DataAccessException e) {
-            log.error("[ERROR][PerformanceQueueDAO][insertData] ", e);
-            throw new Exception(e);
+            log.error("[ERROR][PerformanceQueueDAO][insertData] Insert data failed");
+            throw e;
         }
     }
 
     @Override
-    public void updateAttempts(String reportUid) throws Exception {
+    public void updateAttempts(String reportUid) throws RuntimeException {
         try {
             Map<String, Object> paramMap = new HashMap<String, Object>() {{
                 put("reportUid", reportUid);
@@ -69,13 +68,13 @@ public class PerformanceQueueDAOImpl implements PerformanceQueueDAO {
 
             namedParameterJdbcTemplate.update(UPDATE_ATTEMPTS_TABLE_TEST_PERFORMANCE_QUEUE, paramMap);
         } catch (DataAccessException e) {
-            log.error("[ERROR][PerformanceQueueDAO][updateData] ", e);
-            throw new Exception(e);
+            log.error("[ERROR][PerformanceQueueDAO][updateData] Update data failed");
+            throw e;
         }
     }
 
     @Override
-    public void deleteData(String reportUid) throws Exception {
+    public void deleteData(String reportUid) throws RuntimeException {
         try {
             Map<String, Object> paramMap = new HashMap<String, Object>() {{
                 put("reportUid", reportUid);
@@ -83,18 +82,18 @@ public class PerformanceQueueDAOImpl implements PerformanceQueueDAO {
 
             namedParameterJdbcTemplate.update(DELETE_TABLE_TEST_PERFORMANCE_QUEUE, paramMap);
         } catch (DataAccessException e) {
-            log.error("[ERROR][PerformanceQueueDAO][deleteData] ", e);
-            throw new Exception(e);
+            log.error("[ERROR][PerformanceQueueDAO][deleteData] Delete data failed");
+            throw e;
         }
     }
 
     @Override
-    public void deleteAll() throws Exception {
+    public void deleteAll() throws RuntimeException {
         try {
             namedParameterJdbcTemplate.update(DELETE_ALL, new HashMap<>());
         } catch (DataAccessException e) {
-            log.error("[ERROR][PerformanceQueueDAO][deleteAll] ", e);
-            throw new Exception(e);
+            log.error("[ERROR][PerformanceQueueDAO][deleteAll] Delete all failed ");
+            throw e;
         }
     }
 

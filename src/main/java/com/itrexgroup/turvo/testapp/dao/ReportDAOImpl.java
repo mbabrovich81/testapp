@@ -9,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -60,39 +59,22 @@ public class ReportDAOImpl implements ReportDAO {
 
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
-//    new HashMap<String, Object>() {{
-//        put("report_uid", reportUid);
-//        put("state", ReportState.in_progress.name());
-//        put("database_name", db.name());
-//        put("created_date", new Timestamp(System.currentTimeMillis()));
-//        put("query", query);
-//    }};
-
     @Override
     public void insertData(Report report) throws RuntimeException {
         try {
-            namedParameterJdbcTemplate.update(INSERT_TABLE_TEST_PERFORMANCE_REPORT, Utils.toMap(report));
+            namedParameterJdbcTemplate.update(INSERT_TABLE_TEST_PERFORMANCE_REPORT, Utils.reportToMap(report));
         } catch (DataAccessException e) {
-            log.error("[ERROR][ReportDAO][insertData] ", e);
+            log.error("[ERROR][ReportDAO][insertData] Insert data failed");
             throw e;
         }
     }
 
-//         return new HashMap<String, Object>() {{
-//        put("state", ReportState.success.name());
-//        put("time_in_nanos", queryTime);
-//        put("start_date", new Timestamp(startDate));
-//        put("end_date", new Timestamp(endDate));
-//        put("res_msg", resMsg);
-//        put("report_uid", reportUid);
-//        put("database_name", db.name());
-//    }};
     @Override
     public void updateData(Report report) throws RuntimeException {
         try {
-            namedParameterJdbcTemplate.update(UPDATE_TABLE_TEST_PERFORMANCE_REPORT, Utils.toMap(report));
+            namedParameterJdbcTemplate.update(UPDATE_TABLE_TEST_PERFORMANCE_REPORT, Utils.reportToMap(report));
         } catch (DataAccessException e) {
-            log.error("[ERROR][ReportDAO][updateData] ", e);
+            log.error("[ERROR][ReportDAO][updateData] Update data failed");
             throw e;
         }
     }
@@ -107,7 +89,7 @@ public class ReportDAOImpl implements ReportDAO {
 
             namedParameterJdbcTemplate.update(UPDATE_STATE, paramMap);
         } catch (DataAccessException e) {
-            log.error("[ERROR][ReportDAO][updateState] ", e);
+            log.error("[ERROR][ReportDAO][updateState] Update state failed");
             throw e;
         }
     }
